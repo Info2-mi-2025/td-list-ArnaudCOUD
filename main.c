@@ -55,14 +55,33 @@ typedef struct
 // Fonctions de base
 void append(List* list, int value)
 {
+    Node* noeux = malloc(sizeof(Node));
+    noeux->value = value;
+    noeux->next = NULL;
+    if (list->head == NULL) {
+        list->head = noeux;
+    }
+    if (list->tail != NULL) {
+        list->tail->next = noeux;
+    }
+    list->tail = noeux;
 }
 
 void free_list(List* list)
 {
+    list->head = NULL;
+    list->tail = NULL;
 }
 
 void print_list(const List* list)
 {
+    printf("Liste :");
+    Node* noeux_actuel = list->head;
+    while(noeux_actuel!=NULL){
+        printf(" %d ",noeux_actuel->value);
+        noeux_actuel = noeux_actuel->next;
+        if(noeux_actuel!=NULL)printf("->");
+    }
 }
 
 void reverse_list(List* list)
@@ -102,15 +121,18 @@ void help()
     printf("  --max             Affiche la valeur maximale de la liste\n");
 }
 
+void version(){
+    printf("version 1.0\n");
+}
 // Lecture fichier
 bool read_file(const char* filename, List* list)
 {
     FILE* f = fopen(filename, "r");
-    if (!f) return false;
+    if (!f) exit(2);
     int value;
-    
+
     while (fscanf(f, "%d", &value) == 1) append(list, value);
-    
+
     fclose(f);
     return true;
 }
@@ -124,6 +146,19 @@ bool add_to_file(const char* filename, int value)
     return true;
 }
 
+void check_argu(int argc, char* argv[], char* nom_fichier) {
+    bool fichier_trouve = false;
+    for (int i = 1; i < argc; i++) {
+        if(sscanf(argv[i],"%s.txt")){
+            fichier_trouve = true;
+            break;
+        }
+    }
+    if(!fichier_trouve){
+        exit(1);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     // Ne pas modifier
@@ -131,6 +166,25 @@ int main(int argc, char* argv[])
     // ---------------
 
     if(argc < 2) return 1;
-    
+    char nom_fichier[20]={0};
+    check_argu(argc,argv,nom_fichier);
+    printf("J'ai fini avec les arguments fichier : %s",nom_fichier);
+    List liste={NULL};
+    read_file(nom_fichier,&liste);
+
+    print_list(&liste);
+
+
+    for (int i = 1; i < argc; i++){
+        if(!strcmp(argv[2],"--help")){
+            help();
+            return 0;
+        }
+
+        if(!strcmp(argv[2],"--version") || !strcmp(argv[2],"-v")){
+            version();
+            return 0;
+        }
+    }
     return 0;
 }
